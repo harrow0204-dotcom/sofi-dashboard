@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOFI ポジション管理ダッシュボード</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#fff;--bg2:#f5f5f4;--text:#1a1a1a;--text2:#6b6b6b;
+  --border:rgba(0,0,0,.12);--border2:rgba(0,0,0,.22);
+  --r:8px;--rl:12px;
+  --blue:#378ADD;--green:#1D9E75;--red:#E24B4A;
+  --amber:#BA7517;--purple:#534AB7;--teal:#0F6E56;--gray:#888780;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1a1a1a;--bg2:#242424;--text:#f0f0f0;--text2:#9a9a9a;
+        --border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.2)}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+.dh{padding-bottom:1rem;border-bottom:.5px solid var(--border);margin-bottom:1.25rem}
+.dt{font-size:18px;font-weight:500;margin-bottom:3px}
+.ds{font-size:12px;color:var(--text2)}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}
+.mc{background:var(--bg2);border-radius:var(--r);padding:.75rem 1rem}
+.ml{font-size:11px;color:var(--text2);margin-bottom:3px}
+.mv{font-size:20px;font-weight:500}
+.md{font-size:11px;margin-top:2px}
+.up{color:#1D9E75}.dn{color:#D85A30}.nt{color:#378ADD}
+.tr{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tb{font-size:12px;padding:6px 14px;border:.5px solid var(--border2);
+     border-radius:var(--r);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.tb:hover{background:var(--bg2);color:var(--text)}
+.tb.act{background:var(--bg2);color:var(--text);font-weight:500}
+.panel{display:none}.panel.show{display:block}
+.sl{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:var(--text2)}
+.leg span{display:flex;align-items:center;gap:5px}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.ll{width:16px;height:2px;flex-shrink:0}
+.lx{width:16px;height:0;border-top:2px dashed;flex-shrink:0}
+.cw{position:relative;width:100%}
+.hr{border:none;border-top:.5px solid var(--border);margin:1.5rem 0}
+.gbox{background:var(--bg2);border-radius:var(--r);padding:.85rem 1rem;
+       margin-top:1rem;font-size:12px;color:var(--text2);border-left:3px solid var(--blue)}
+.gbox strong{color:var(--text);font-size:13px;display:block;margin-bottom:6px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem}
+.tbl th{text-align:left;color:var(--text2);font-weight:500;padding:6px 8px;
+         border-bottom:.5px solid var(--border);white-space:nowrap}
+.tbl td{padding:6px 8px;border-bottom:.5px solid var(--border)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:var(--bg2)}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;white-space:nowrap}
+.bg2{background:rgba(29,158,117,.15);color:#0F6E56}
+.bb2{background:rgba(55,138,221,.15);color:#185FA5}
+.bo2{background:rgba(186,117,23,.15);color:#854F0B}
+.br2{background:rgba(226,75,74,.15);color:#A32D2D}
+.note{font-size:11px;color:var(--text2);margin-top:.5rem}
+@media(max-width:600px){
+  .mg{grid-template-columns:repeat(3,1fr)}.mv{font-size:16px}
+  .tbl{font-size:11px}.tbl th,.tbl td{padding:5px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dh">
+  <div class="dt">📊 SOFI / SoFi Technologies — 分析ダッシュボード</div>
+  <div class="ds">2021〜2026 Q2ガイダンス ｜ SEC 8-K / stockanalysis.com / tikr.com ｜ 最終更新: 2026-05-24 04:57</div>
+</div>
+
+<div class="mg">
+  <div class="mc"><div class="ml">Q1'26 売上</div><div class="mv">$1.09B</div><div class="md up">+42% YoY</div></div>
+  <div class="mc"><div class="ml">Q1'26 EPS</div><div class="mv">$0.12</div><div class="md up">+100% YoY</div></div>
+  <div class="mc"><div class="ml">メンバー数</div><div class="mv">1,470万</div><div class="md up">+35% YoY</div></div>
+  <div class="mc"><div class="ml">Q2'26 売上 (G)</div><div class="mv">~$1.115B</div><div class="md nt">EPS $0.10–0.11</div></div>
+  <div class="mc"><div class="ml">通期'26 売上 (G)</div><div class="mv">~$4.655B</div><div class="md nt">EPS ~$0.50</div></div>
+  <div class="mc"><div class="ml">現在株価</div><div class="mv">$15.05</div><div class="md dn">ATHから-54%</div></div>
+</div>
+
+<div class="tr">
+  <button class="tb act" onclick="showT('fund',this)">📈 業績推移</button>
+  <button class="tb" onclick="showT('kpi',this)">🔑 KPIトレンド</button>
+  <button class="tb" onclick="showT('tech',this)">📊 テクニカル</button>
+  <button class="tb" onclick="showT('comb',this)">🔀 ファンダ×テクニカル</button>
+  <button class="tb" onclick="showT('guide',this)">🎯 ガイダンス</button>
+</div>
+
+<!-- FUND -->
+<div id="p-fund" class="panel show">
+  <div class="sl">四半期売上（棒・左軸）＋ EPS（折れ線・右軸）</div>
+  <div class="leg">
+    <span><span class="ld" style="background:#378ADD"></span>売上 実績</span>
+    <span><span class="ld" style="background:rgba(55,138,221,.3);border:1px dashed #378ADD"></span>売上 ガイダンス</span>
+    <span><span class="ll" style="background:#1D9E75"></span>EPS 実績 (右軸)</span>
+    <span><span class="lx" style="border-color:#1D9E75"></span>EPS ガイダンス (右軸)</span>
+  </div>
+  <div class="cw" style="height:300px"><canvas id="cFund"></canvas></div>
+</div>
+
+<!-- KPI -->
+<div id="p-kpi" class="panel">
+  <div class="sl">メンバー数（棒・左軸）＋ 製品数（折れ線・右軸）</div>
+  <div class="leg">
+    <span><span class="ld" style="background:#534AB7"></span>メンバー数（万人）</span>
+    <span><span class="ll" style="background:#AFA9EC"></span>製品数（万、右軸）</span>
+  </div>
+  <div class="cw" style="height:230px"><canvas id="cKpi1"></canvas></div>
+  <div class="hr"></div>
+  <div class="sl">フィー収益（棒・左軸）＋ YoY成長率（折れ線・右軸）</div>
+  <div class="leg">
+    <span><span class="ld" style="background:#0F6E56"></span>フィー収益 ($M)</span>
+    <span><span class="ll" style="background:#9FE1CB"></span>YoY成長率（%、右軸）</span>
+  </div>
+  <div class="cw" style="height:210px"><canvas id="cKpi2"></canvas></div>
+</div>
+
+<!-- TECH -->
+<div id="p-tech" class="panel">
+  <div class="sl">株価推移 vs MA50 / MA200（月次参考値）</div>
+  <div class="leg">
+    <span><span class="ll" style="background:#378ADD"></span>株価</span>
+    <span><span class="ll" style="background:#E24B4A"></span>MA50</span>
+    <span><span class="lx" style="border-color:#888780"></span>MA200</span>
+  </div>
+  <div class="cw" style="height:250px"><canvas id="cPrice"></canvas></div>
+  <div class="hr"></div>
+  <div class="sl">サポート・レジスタンスゾーン</div>
+  <div style="overflow-x:auto">
+    <table class="tbl">
+      <tr><th>ゾーン</th><th>価格帯</th><th>現在株価との距離</th><th>意味・根拠</th><th>判断</th></tr>
+      <tr><td>🟥 損切りライン</td><td>$12〜$13</td><td>-14〜-20%</td><td>シナリオ崩壊ライン。出来高増加を伴う割り込みで撤退</td><td><span class="badge br2">要注意</span></td></tr>
+      <tr><td>🟩 サポート（主要）</td><td>$14〜$15</td><td>-1〜-7%</td><td>積み上げゾーン・直近サポート。現在この付近で推移中</td><td><span class="badge bg2">ここを守れるか注目</span></td></tr>
+      <tr><td>🔵 現在株価</td><td>$15.05</td><td>—</td><td>サポートゾーン上限付近。RSIは売られすぎ圏に接近</td><td><span class="badge bb2">現在地</span></td></tr>
+      <tr><td>🟡 レジスタンス①</td><td>$19.5〜$20</td><td>+30〜+33%</td><td>再上昇確認ライン。MA50付近。ここを超えると上昇トレンド転換</td><td><span class="badge bo2">第一目標</span></td></tr>
+      <tr><td>🟡 レジスタンス②</td><td>$23〜$24</td><td>+53〜+59%</td><td>MA200付近。中期的な上値めど</td><td><span class="badge bo2">中期目標</span></td></tr>
+      <tr><td>🟢 長期目標</td><td>$28〜$30</td><td>+86〜+99%</td><td>アナリスト高値目標ゾーン（Citi $30、JPM $31）</td><td><span class="badge bg2">長期目標</span></td></tr>
+      <tr><td>🏆 ATH</td><td>$32.73</td><td>+117%</td><td>2025年11月12日 史上最高値</td><td><span class="badge bo2">過去最高値</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- COMB -->
+<div id="p-comb" class="panel">
+  <div class="sl">売上YoY成長率（棒・左軸）× 株価四半期末（折れ線・右軸）— 四半期ごとの乖離</div>
+  <div class="leg">
+    <span><span class="ld" style="background:rgba(29,158,117,.7)"></span>売上 YoY成長率（%）</span>
+    <span><span class="ll" style="background:#378ADD"></span>株価 四半期末（$、右軸）</span>
+  </div>
+  <div class="cw" style="height:300px"><canvas id="cComb"></canvas></div>
+  <div class="gbox">
+    <strong>乖離ポイント</strong>
+    売上YoY成長率は2024後半〜2026で+37〜42%に再加速。一方で株価は2025年11月のATH $32.73をピークに急落し、業績との乖離が最大化している局面。EPS成長は+100〜+160%超と加速中。
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div id="p-guide" class="panel">
+  <div class="sl">四半期売上 実績 vs ガイダンス/コンセンサス比較</div>
+  <div class="leg">
+    <span><span class="ld" style="background:#378ADD"></span>売上 実績 ($M)</span>
+    <span><span class="ld" style="background:rgba(55,138,221,.3);border:1px dashed #378ADD"></span>ガイダンス / コンセンサス ($M)</span>
+  </div>
+  <div class="cw" style="height:270px"><canvas id="cGuide"></canvas></div>
+  <div class="hr"></div>
+  <div class="sl">EPS 実績 vs ガイダンス（四半期）</div>
+  <div class="leg">
+    <span><span class="ll" style="background:#1D9E75"></span>EPS 実績</span>
+    <span><span class="lx" style="border-color:#BA7517"></span>EPS ガイダンス（会社予想）</span>
+  </div>
+  <div class="cw" style="height:220px"><canvas id="cEpsG"></canvas></div>
+  <div class="gbox">
+    <strong>📋 ガイダンス詳細（直近6四半期）</strong>
+    <table class="tbl">
+      <tr><th>期間</th><th>売上ガイダンス</th><th>売上実績</th><th>EPS G</th><th>EPS 実績</th><th>結果</th></tr>
+      <tr><td>Q2'26（予定）</td><td>~$1,115M</td><td>—</td><td>$0.10–0.11</td><td>—</td><td><span class="badge bb2">今後</span></td></tr>
+      <tr><td>Q1'26</td><td>~$1,040M</td><td>$1,090M ✅</td><td>~$0.12</td><td>$0.12 ✅</td><td><span class="badge bg2">上回った</span></td></tr>
+      <tr><td>Q4'25</td><td>~$982M*</td><td>$1,013M ✅</td><td>~$0.12*</td><td>$0.13 ✅</td><td><span class="badge bg2">上回った</span></td></tr>
+      <tr><td>Q3'25</td><td>~$870M*</td><td>$962M ✅</td><td>~$0.10*</td><td>$0.12 ✅</td><td><span class="badge bg2">上回った</span></td></tr>
+      <tr><td>Q2'25</td><td>~$800M*</td><td>$797M</td><td>~$0.07*</td><td>$0.09 ✅</td><td><span class="badge bg2">EPS上回った</span></td></tr>
+      <tr><td>Q1'25</td><td>—</td><td>$771M</td><td>—</td><td>$0.06</td><td><span class="badge bo2">GAAP黒字定着</span></td></tr>
+    </table>
+    <div class="note">* コンセンサス推定値 ｜ 通期2026: 売上~$4.655B(+30%)、EPS~$0.50、EBITDA~$1.6B(34%) ｜ Fed利下げゼロ想定</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const GC=matchMedia('(prefers-color-scheme:dark)').matches?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';
+const TC='#888780';
+const FX={color:TC,font:{size:11}};
+const qL=["Q1'21","Q2'21","Q3'21","Q4'21","Q1'22","Q2'22","Q3'22","Q4'22","Q1'23","Q2'23","Q3'23","Q4'23","Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26(G)"];
+const revA=[209,231,251,286,322,356,419,457,472,498,537,615,645,599,697,739,771,797,962,1013,1090,null],revG=[null,null,null,null,null,null,null,null,470,489,531,null,580,null,689,null,null,800,870,982,1040,1115],epsA=[-0.48,-0.35,-0.3,-0.27,-0.23,-0.19,-0.17,-0.1,-0.1,-0.07,-0.05,0.02,0.02,0.01,0.05,0.06,0.06,0.09,0.12,0.13,0.12,null],epsG=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.12,0.105];
+const combP=[9.5,11.0,16.5,14.0,9.8,7.2,5.8,5.2,5.4,7.8,8.1,8.8,8.0,8.3,10.4,13.5,15.2,19.8,28.5,32.73,15.05,null],combGr=[null,null,null,null,54,54,67,60,47,40,28,35,37,20,30,24,20,20,38,37,42,null];
+const kQ=["Q4'24","Q1'25","Q2'25","Q3'25","Q4'25","Q1'26"],mb=[1268,1330,1440,1360,1400,1470],pd2=[1950,2050,2170,2110,2180,2220],fr=[315,378,430,443,429],fg2=[60,72,65,50,36];
+const pM=["2025/01","2025/03","2025/05","2025/07","2025/09","2025/11","2026/01","2026/03","2026/05"],pS=[13.5,15.8,18.5,23.4,27.2,32.73,19.8,17.2,15.05],pMA50=[null,null,null,null,null,null,22.0,18.5,17.2],pMA200=[null,null,null,null,null,null,26.0,24.0,23.4];
+const egQ=["Q1'23","Q2'23","Q3'23","Q4'23","Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26(G)"],egA=[-0.1,-0.07,-0.05,0.02,0.02,0.01,0.05,0.06,0.06,0.09,0.12,0.13,0.12,null],egG=[null,null,null,null,null,null,null,null,null,null,null,null,0.12,0.105];
+const gdA=[209,231,251,286,322,356,419,457,472,498,537,615,645,599,697,739,771,797,962,1013,1090,null],gdG=[null,null,null,null,null,null,null,null,470,489,531,null,580,null,689,null,null,800,870,982,1040,1115];
+
+function mkOpts(yL,y2L){
+  return {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+    scales:{
+      x:{grid:{color:GC},ticks:{...FX,maxRotation:55,autoSkip:true,maxTicksLimit:14}},
+      y:{grid:{color:GC},ticks:{...FX,callback:yL},title:{display:false}},
+      ...(y2L?{y2:{position:'right',grid:{display:false},ticks:{...FX,callback:y2L}}}:{})
+    }
+  };
+}
+
+new Chart(document.getElementById('cFund'),{type:'bar',data:{labels:qL,datasets:[
+  {label:'売上実績',data:revA,backgroundColor:'#378ADD',borderRadius:3,order:3,yAxisID:'y'},
+  {label:'売上G',data:revG,backgroundColor:'rgba(55,138,221,.3)',borderColor:'#378ADD',borderWidth:1.5,borderRadius:3,order:4,yAxisID:'y'},
+  {label:'EPS実績',data:epsA,type:'line',borderColor:'#1D9E75',backgroundColor:'transparent',borderWidth:2,pointRadius:3,tension:0.3,order:1,yAxisID:'y2',fill:false},
+  {label:'EPSG',data:epsG,type:'line',borderColor:'#1D9E75',borderDash:[5,3],backgroundColor:'transparent',borderWidth:2,pointRadius:5,pointStyle:'triangle',tension:0,order:0,yAxisID:'y2',fill:false}
+]},options:{...mkOpts(v=>'$'+v+'M',v=>'$'+v.toFixed(2)),
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,
+    callbacks:{label:c=>c.parsed.y===null?null:c.datasetIndex<=1?c.dataset.label+': $'+c.parsed.y.toFixed(0)+'M':c.dataset.label+': $'+c.parsed.y.toFixed(2)}}},
+  scales:{
+    x:{grid:{color:GC},ticks:{...FX,maxRotation:55,autoSkip:true,maxTicksLimit:14}},
+    y:{grid:{color:GC},ticks:{...FX,callback:v=>'$'+v+'M'},title:{display:true,text:'売上($M)',color:TC,font:{size:10}}},
+    y2:{position:'right',grid:{display:false},ticks:{...FX,callback:v=>'$'+v.toFixed(2)},title:{display:true,text:'EPS($)',color:TC,font:{size:10}}}
+  }
+}});
+
+new Chart(document.getElementById('cKpi1'),{type:'bar',data:{labels:kQ,datasets:[
+  {label:'メンバー数',data:mb,backgroundColor:'#534AB7',borderRadius:3,order:2,yAxisID:'y'},
+  {label:'製品数',data:pd2,type:'line',borderColor:'#AFA9EC',backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:0.3,order:1,yAxisID:'y2'}
+]},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+  scales:{x:{grid:{color:GC},ticks:FX},
+    y:{grid:{color:GC},ticks:{...FX,callback:v=>v+'万'},title:{display:true,text:'メンバー数',color:TC,font:{size:10}}},
+    y2:{position:'right',grid:{display:false},ticks:{...FX,callback:v=>v+'万'},title:{display:true,text:'製品数',color:TC,font:{size:10}},min:1800,max:2400}
+  }
+}});
+
+new Chart(document.getElementById('cKpi2'),{type:'bar',data:{labels:["Q1'25","Q2'25","Q3'25","Q4'25","Q1'26"],datasets:[
+  {label:'フィー収益',data:fr,backgroundColor:'#0F6E56',borderRadius:3,order:2,yAxisID:'y'},
+  {label:'YoY%',data:fg2,type:'line',borderColor:'#9FE1CB',backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:0.3,order:1,yAxisID:'y2'}
+]},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+  scales:{x:{grid:{color:GC},ticks:FX},
+    y:{grid:{color:GC},ticks:{...FX,callback:v=>'$'+v+'M'},title:{display:true,text:'収益($M)',color:TC,font:{size:10}}},
+    y2:{position:'right',grid:{display:false},ticks:{...FX,callback:v=>v+'%'},title:{display:true,text:'YoY%',color:TC,font:{size:10}},min:0,max:100}
+  }
+}});
+
+new Chart(document.getElementById('cPrice'),{type:'line',data:{labels:pM,datasets:[
+  {label:'株価',data:pS,borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,.08)',borderWidth:2,fill:true,pointRadius:3,tension:0.35},
+  {label:'MA50',data:pMA50,borderColor:'#E24B4A',borderWidth:2,pointRadius:0,tension:0.3,fill:false},
+  {label:'MA200',data:pMA200,borderColor:'#888780',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:0.3,fill:false}
+]},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.dataset.label+': $'+(c.parsed.y||0).toFixed(2)}}},
+  scales:{x:{grid:{color:GC},ticks:{...FX,maxRotation:30}},y:{grid:{color:GC},ticks:{...FX,callback:v=>'$'+v},min:8,max:36}}
+}});
+
+new Chart(document.getElementById('cComb'),{type:'bar',data:{labels:qL,datasets:[
+  {label:'売上YoY%',data:combGr,backgroundColor:'rgba(29,158,117,.65)',borderRadius:3,order:2,yAxisID:'y'},
+  {label:'株価四半期末',data:combP,type:'line',borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,.08)',borderWidth:2.5,pointRadius:3,fill:true,tension:0.35,order:1,yAxisID:'y2'}
+]},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,
+    callbacks:{label:c=>c.parsed.y===null?null:c.datasetIndex===0?c.dataset.label+': '+c.parsed.y.toFixed(0)+'%':c.dataset.label+': $'+c.parsed.y.toFixed(2)}}},
+  scales:{
+    x:{grid:{color:GC},ticks:{...FX,maxRotation:55,autoSkip:true,maxTicksLimit:14}},
+    y:{grid:{color:GC},ticks:{...FX,callback:v=>v+'%'},title:{display:true,text:'売上成長率(%)',color:TC,font:{size:10}},min:0,max:80},
+    y2:{position:'right',grid:{display:false},ticks:{...FX,callback:v=>'$'+v},title:{display:true,text:'株価($)',color:TC,font:{size:10}},min:0,max:40}
+  }
+}});
+
+new Chart(document.getElementById('cGuide'),{type:'bar',data:{labels:qL,datasets:[
+  {label:'売上実績',data:gdA,backgroundColor:'#378ADD',borderRadius:3,order:2},
+  {label:'ガイダンス',data:gdG,backgroundColor:'rgba(55,138,221,.3)',borderColor:'#378ADD',borderWidth:1.5,borderRadius:3,order:3}
+]},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.parsed.y!==null?c.dataset.label+': $'+c.parsed.y.toFixed(0)+'M':null}}},
+  scales:{x:{grid:{color:GC},ticks:{...FX,maxRotation:55,autoSkip:true,maxTicksLimit:14}},y:{grid:{color:GC},ticks:{...FX,callback:v=>'$'+v+'M'}}}
+}});
+
+new Chart(document.getElementById('cEpsG'),{type:'line',data:{labels:egQ,datasets:[
+  {label:'EPS実績',data:egA,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,.1)',borderWidth:2.5,pointRadius:4,fill:true,tension:0.3},
+  {label:'EPSガイダンス',data:egG,borderColor:'#BA7517',borderDash:[5,3],backgroundColor:'transparent',borderWidth:2,pointRadius:6,pointStyle:'triangle',fill:false,tension:0}
+]},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>c.parsed.y!==null?c.dataset.label+': $'+c.parsed.y.toFixed(3):null}}},
+  scales:{x:{grid:{color:GC},ticks:{...FX,maxRotation:45}},y:{grid:{color:GC},ticks:{...FX,callback:v=>'$'+v.toFixed(2)},min:-0.15,max:0.20}}
+}});
+
+function showT(n,b){
+  ['fund','kpi','tech','comb','guide'].forEach(t=>document.getElementById('p-'+t).classList.toggle('show',t===n));
+  document.querySelectorAll('.tb').forEach(x=>x.classList.remove('act'));
+  b.classList.add('act');
+}
+</script>
+</body>
+</html>
